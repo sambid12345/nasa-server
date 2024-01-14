@@ -1,14 +1,16 @@
 const fs = require("fs");
 const { parse } = require("csv-parse");
 
+const planets = require("./planets.mongo");
+
 function isHabitable(planet) {
   return (
     planet.hasOwnProperty("kepler_name") &&
     planet["koi_disposition"] === "CONFIRMED"
   );
 }
-const readData = async () => {
-  const planets = [];
+const insertDataToDB = async () => {
+  // const planets = [];
 
   try {
     const sourcePath = __dirname + "/kepler_data.csv";
@@ -17,13 +19,28 @@ const readData = async () => {
       .pipe(parse({ delimiter: ",", comment: "#", columns: true }));
 
     for await (const chunk of readableStream) {
-      if (isHabitable(chunk)) planets.push(chunk);
+      if (isHabitable(chunk)) {
+        const { kepler_name, ...rest } = chunk;
+        try {
+          await planets.findOneAndUpdate(
+            { keplerName: chunk.kepler_name },
+            { keplerName: chunk.kepler_name },
+            { upsert: true }
+          );
+          // console.log("data inserting...");
+        } catch (error) {
+          console.log("error occured in inserting planets data");
+        }
+      }
     }
   } catch (error) {
     console.log("error occured");
   }
-  //   console.log("Finished reading file", planets);
-  return planets;
+};
+
+const readData = async () => {
+  return await planets.find({}, { _id: 0 });
 };
 
 module.exports.readPlanetsData = readData;
+module.exports.insertDataToDB = insertDataToDB;
