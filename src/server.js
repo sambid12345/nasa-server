@@ -3,13 +3,23 @@ const PORT = process.env.PORT;
 const mongoUrl = process.env.MONGO_URL;
 
 const http = require("http");
+const https = require("https");
+const fs = require("fs");
 const mongoose = require("mongoose");
 const app = require("./app");
 const { url } = require("inspector");
 const planetsModel = require("../src/models/planets.model");
 const launchesModel = require("../src/models/launches.model");
 
-const server = http.createServer(app);
+// const server = http.createServer(app);
+
+const server = https.createServer(
+  {
+    key: fs.readFileSync(__dirname + "../../key.pem"),
+    cert: fs.readFileSync(__dirname + "../../cert.pem"),
+  },
+  app
+);
 
 async function startServer() {
   try {
