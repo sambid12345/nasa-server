@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const winston = require("winston");
 const { combine, timestamp, json } = winston.format;
 const planetRoute = require("./routes/planets/planets.router");
@@ -35,6 +36,8 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+
+app.use(helmet());
 
 app.use("/planets", planetRoute);
 app.use("/launches", launchesRouter);
